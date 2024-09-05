@@ -8,6 +8,10 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import authentication_classes,permission_classes
+from rest_framework.authentication import SessionAuthentication,TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+
 @api_view(['GET','POST'])
 def database_view(request):
     if request.method=='GET':
@@ -61,3 +65,9 @@ def login(request):
     token,created=Token.objects.get_or_create(user=user)
     serializer =UserSerializer(instance=user)
     return Response({"token":token.key,"user":serializer.data})
+
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication,TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def test_token(request):
+    return Response("passesd for {}".format(request.user.email))
