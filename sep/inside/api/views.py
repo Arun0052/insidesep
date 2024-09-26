@@ -81,8 +81,8 @@ def evaluate_data(res):
 
 @api_view(['GET'])
 def database_count(request):
-    tech=eval(request.GET.get("TECH",[]))
-    stand_sett=eval(request.GET.get("STANDARD_SET",[]))
+    tech=eval(request.GET.get("TECH",'[]'))
+    stand_sett=eval(request.GET.get("STANDARD_SET",'[]'))
     patent=request.GET.get("PATENT_OWNER",'')
     stand=request.GET.get("STANDARD",'')
     IPRD_REF=request.GET.get('IPRD_REFERENCE','')
@@ -99,7 +99,7 @@ def database_count(request):
                                             & Q(Sub_Technology__icontains=Sub_Technology)
                                             & Q(IPRD_SIGNATURE_DATE__gte=from_date)
                                             & Q(IPRD_SIGNATURE_DATE__lte=to_date))
-    else:
+    elif len(stand_sett)>0 and len(tech)>0:
         # data = Sep_dashboard.objects.filter(Technology__in=eval(tech))
         data = Sep_dashboard.objects.filter(Q(Technology__in=tech)
                                             & Q(STANDARD_SETTING__in=stand_sett)
@@ -107,6 +107,25 @@ def database_count(request):
                                             & Q(PATENT_OWNER__icontains=patent) & Q(IPRD_REFERENCE__icontains=IPRD_REF)
                                             & Q(Patent_Number__icontains=Patent_num)
                                             & Q(Sub_Technology__icontains=Sub_Technology))
+    elif len(stand_sett)>0:
+        data = Sep_dashboard.objects.filter(Q(STANDARD_SETTING__in=stand_sett)
+                                            & Q(STANDARD__icontains=stand)
+                                            & Q(PATENT_OWNER__icontains=patent) & Q(IPRD_REFERENCE__icontains=IPRD_REF)
+                                            & Q(Patent_Number__icontains=Patent_num)
+                                            & Q(Sub_Technology__icontains=Sub_Technology))
+    elif len(tech)>0:
+        data = Sep_dashboard.objects.filter(Q(Technology__in=tech)
+                                            & Q(STANDARD__icontains=stand)
+                                            & Q(PATENT_OWNER__icontains=patent) & Q(IPRD_REFERENCE__icontains=IPRD_REF)
+                                            & Q(Patent_Number__icontains=Patent_num)
+                                            & Q(Sub_Technology__icontains=Sub_Technology))
+    else:
+        data = Sep_dashboard.objects.filter(Q(STANDARD__icontains=stand)
+                                            & Q(PATENT_OWNER__icontains=patent) & Q(IPRD_REFERENCE__icontains=IPRD_REF)
+                                            & Q(Patent_Number__icontains=Patent_num)
+                                            & Q(Sub_Technology__icontains=Sub_Technology))
+
+
     res = Sep_dashboard_Serilizaer(data, many=True)
     count_data= evaluate_data(res)
     return Response({'result':res.data,'count':count_data})
