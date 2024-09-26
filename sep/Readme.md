@@ -32,7 +32,7 @@ curl --location 'http://127.0.0.1:8000/insidedb/list/?limit=10&offset=10%0A'
 
 ### search
 '''
-curl --location 'http://127.0.0.1:8000/insidedb/search?TECH=2G%2C%203G&STANDARD_SET=null&PATENT_OWNER=null&IPRD_REFERENCE=null&PATENT_NUM=null&STANDARD=null&Sub_Tech=null&DATE_FROM=&DATE_TO='
+curl --location --globoff 'http://127.0.0.1:8000/insidedb/search?TECH=["2G, 3G", "2G"]&STANDARD_SET=["ETSI"]&PATENT_OWNER=null&IPRD_REFERENCE=null&PATENT_NUM=null&STANDARD=null&Sub_Tech=null&DATE_FROM=&DATE_TO='
 '''
 
 ### single search with primary key
