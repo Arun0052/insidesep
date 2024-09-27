@@ -24,6 +24,12 @@ def database_view(request):
     if request.method=='GET':
         data=Sep_dashboard.objects.all()
         res=Sep_dashboard_Serilizaer(data,many=True)
+        offset = request.GET.get("offset", None)
+        limit = request.GET.get('limit', None)
+        if offset is not None and limit is not None:
+            offset = int(offset)
+            limit = int(limit)
+            return Response(res.data[offset:offset+limit])
         return Response(res.data)
     if request.method=='POST':
         serilizer=Sep_dashboard_Serilizaer(data=request.data)
@@ -33,27 +39,27 @@ def database_view(request):
         else:
             return Response(serilizer.errors)
 
-# class dashboard(APIView):
-#     # queryset = Sep_dashboard.objects.all()
-#     # serializer_class = Sep_dashboard_Serilizaer
-#     # filter_backends = [SearchFilter]
-#     # search_fields = ['=STANDARD_SETTING']
-#     # filter_backends=[SearchFilter]
-#     # search_fields=['=STANDARD_SETTING']
-#
-#     def get(self, request, *args, **kwargs):
-#         data = Sep_dashboard.objects.all()
-#         res = Sep_dashboard_Serilizaer(data, many=True)
-#         return Response(res.data)
-#
-#     def post(self,request):
-#         serilizer = Sep_dashboard_Serilizaer(data=request.data)
-#         if serilizer.is_valid():
-#             serilizer.save()
-#             return Response(serilizer.data)
-#         else:
-#             return Response(serilizer.errors)
-
+# class dashboard(generics.ListAPIView):
+#     queryset = Sep_dashboard.objects.all()
+#     serializer_class = Sep_dashboard_Serilizaer
+#     def get_queryset(self):
+#         queryset = super().get_queryset()
+#         offset=self.request.query_params.get("offset",None)
+#         limit=self.request.query_params.get('limit',None)
+#         # data = Sep_dashboard.objects.all()
+#         # res = Sep_dashboard_Serilizaer(data, many=True)
+#         if offset is not None and limit is not None:
+#             offset=int(offset)
+#             limit=int(offset)
+#             return queryset[offset:offset+limit]
+#         return queryset
+    # def post(self):
+    #     serilizer = Sep_dashboard_Serilizaer(data=request.data)
+    #     if serilizer.is_valid():
+    #         serilizer.save()
+    #         return Response(serilizer.data)
+    #     else:
+    #         return Response(serilizer.errors)
 # class dashboard_search(generics.ListAPIView):
 #     queryset = Sep_dashboard.objects.all()
 #     serializer_class = Sep_dashboard_Serilizaer
@@ -89,7 +95,12 @@ def database_count(request):
     Patent_num =request.GET.get('PATENT_NUM', '')
     Sub_Technology=request.GET.get('Sub_Tech', '')
     from_date=request.GET.get('DATE_FROM','')
-    to_date=request.GET.get('DATE_TO','')
+    to_date = request.GET.get('DATE_TO','')
+    offset = request.GET.get("offset", None)
+    limit =  request.GET.get('limit', None)
+    # data = Sep_dashboard.objects.all()
+    # res = Sep_dashboard_Serilizaer(data, many=True)
+
     if from_date!="" and to_date!="":
         data = Sep_dashboard.objects.filter(Q(Technology__in=tech)
                                             & Q(STANDARD__icontains=stand)
@@ -128,7 +139,12 @@ def database_count(request):
 
     res = Sep_dashboard_Serilizaer(data, many=True)
     count_data= evaluate_data(res)
-    return Response({'result':res.data,'count':count_data})
+    if offset is not None and limit is not None:
+        offset = int(offset)
+        limit = int(limit)
+        return Response({'result':res.data[offset:offset+limit],'count':count_data})
+    else:
+        return Response({'result': res.data, 'count': count_data})
 
 @api_view(['GET','PUT','DELETE'])
 def patents_view(request,pk):

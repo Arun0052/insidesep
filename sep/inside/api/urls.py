@@ -12,6 +12,4 @@ urlpatterns = [
     path('login/',login),
     path('test_token/',test_token),
     path('search/',database_count)
-
-
 ]
