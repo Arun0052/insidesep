@@ -127,8 +127,8 @@ def database_count(request):
                                             & Q(IPRD_REFERENCE__contains=IPRD_REF)
                                             & Q(Patent_Number__contains=Patent_num)
                                             & Q(Sub_Technology__contains=Sub_Technology)
-                                            & Q(IPRD_SIGNATURE__contains=from_date)
-                                            & Q(IPRD_SIGNATURE__contains=to_date))
+                                            & Q(IPRD_SIGNATURE_DATE__gte=from_date)
+                                            & Q(IPRD_SIGNATURE_DATE__lte=to_date))
     elif len(stand_sett)>0 and len(tech)>0:
         # data = Sep_dashboard.objects.filter(Technology__in=eval(tech))
         data = Sep_dashboard.objects.filter(Q(Technology__in=tech)
