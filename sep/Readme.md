@@ -33,7 +33,8 @@ curl --location 'http://127.0.0.1:8000/insidedb/list/?limit=10&offset=10%0A'
 
 ### search
 '''
-#http://127.0.0.1:8000/insidedb/search?TECH=["2G, 3G", "2G"]&STANDARD_SET=["ETSI"]&PATENT_OWNER&PATENT_NUM&STANDARD&Sub_Tech&limit=10&offset=10
+#http://127.0.0.1:8000/insidedb/search?TECH[]=2G, 3G&TECH[]=2G
+#http://127.0.0.1:8000/insidedb/search?PATENT_OWNER&PATENT_NUM&STANDARD&Sub_Tech&limit=10&offset=10
 curl --location --globoff 'http://127.0.0.1:8000/insidedb/search?TECH=["2G, 3G", "2G"]&STANDARD_SET=["ETSI"]&PATENT_OWNER=null&IPRD_REFERENCE=null&PATENT_NUM=null&STANDARD=null&Sub_Tech=null&DATE_FROM=&DATE_TO='
 '''
 

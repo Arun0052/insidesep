@@ -87,8 +87,8 @@ def evaluate_data(res):
 
 @api_view(['GET'])
 def database_count(request):
-    tech=eval(request.GET.get("TECH",'[]'))
-    stand_sett=eval(request.GET.get("STANDARD_SET",'[]'))
+    tech=request.GET.getlist("TECH[]",[])
+    stand_sett=request.GET.getlist("STANDARD_SET[]",[])
     patent=request.GET.get("PATENT_OWNER",'')
     stand=request.GET.get("STANDARD",'')
     IPRD_REF=request.GET.get('IPRD_REFERENCE','')
@@ -98,8 +98,6 @@ def database_count(request):
     to_date = request.GET.get('DATE_TO','')
     offset = request.GET.get("offset", None)
     limit =  request.GET.get('limit', None)
-    # data = Sep_dashboard.objects.all()
-    # res = Sep_dashboard_Serilizaer(data, many=True)
 
     if from_date!="" and to_date!="":
         data = Sep_dashboard.objects.filter(Q(Technology__in=tech)
