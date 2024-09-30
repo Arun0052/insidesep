@@ -3,6 +3,7 @@ from ..models import Sep_dashboard
 from django.contrib.auth.models import User
 
 class Sep_dashboard_Serilizaer(serializers.Serializer):
+    S_No = serializers.CharField(required=False, allow_null=True)
     id=serializers.IntegerField(read_only=True)
     S_No = serializers.CharField(allow_blank=True)
     STANDARD_SETTING = serializers.CharField(allow_blank=True)
