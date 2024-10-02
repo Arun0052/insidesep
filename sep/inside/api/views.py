@@ -171,7 +171,7 @@ def database_count(request):
 @api_view(['GET'])
 def get_database(request):
     IPRD_REF=request.GET.get('IPRD_REFERENCE','')
-    data = Sep_dashboard.objects.filter(Q(IPRD_REFERENCE__contains=IPRD_REF))
+    data = Sep_dashboard.objects.filter(Q(IPRD_REFERENCE__contains=IPRD_REF)).order_by('DIPG_DISPLAY_NUMBER')
     res = Sep_dashboard_Serilizaer(data, many=True)
     return Response(res.data)
 
