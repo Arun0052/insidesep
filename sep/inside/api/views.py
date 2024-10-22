@@ -20,6 +20,8 @@ from django.db.models import Count
 import pandas as pd
 
 @api_view(['GET','POST'])
+@authentication_classes([SessionAuthentication,TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def database_view(request):
     if request.method=='GET':
         data=Sep_dashboard.objects.all()
@@ -86,6 +88,8 @@ def evaluate_data(res):
 
 
 @api_view(['GET'])
+@authentication_classes([SessionAuthentication,TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def database_count(request):
     tech=request.GET.getlist("TECH[]",[])
     stand_sett=request.GET.getlist("STANDARD_SET[]",[])
@@ -169,6 +173,8 @@ def database_count(request):
         return Response({'result': unique_res.data, 'count': count_data})
 
 @api_view(['GET'])
+@authentication_classes([SessionAuthentication,TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def get_database(request):
     IPRD_REF=request.GET.get('IPRD_REFERENCE','')
     data = Sep_dashboard.objects.filter(Q(IPRD_REFERENCE__icontains=IPRD_REF)).order_by('DIPG_DISPLAY_NUMBER')
@@ -177,6 +183,8 @@ def get_database(request):
 
 
 @api_view(['GET','PUT','DELETE'])
+@authentication_classes([SessionAuthentication,TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def patents_view(request,pk):
     if request.method=='GET':
         patents=Sep_dashboard.objects.get(pk=pk)
