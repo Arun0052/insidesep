@@ -136,10 +136,16 @@ def database_count(request):
     to_date = request.GET.get('DATE_TO','')
     offset = request.GET.get("offset", None)
     limit =  request.GET.get('limit', None)
+    if len(tech)>0:
+        query = Q()
+        for tec in tech:
+            query |= Q(Technology__icontains=tec)
+
     if len(tech)==0 and len(stand_sett)==0 and patent=="" and stand=="" and IPRD_REF=="" and Patent_num=="" and Sub_Technology=="" and from_date=="" and to_date =="":
         data = Sep_dashboard.objects.filter(STANDARD__iexact="ahhh")
+
     elif from_date!="" and to_date!="" and len(stand_sett)>0 and len(tech)>0:
-        data = Sep_dashboard.objects.filter(Q(Technology__in=tech)
+        data = Sep_dashboard.objects.filter(query
                                             & Q(STANDARD__icontains=stand)
                                             & Q(STANDARD_SETTING__in=stand_sett)
                                             & Q(PATENT_OWNER__icontains=patent)
@@ -158,7 +164,7 @@ def database_count(request):
                                             & Q(IPRD_SIGNATURE_DATE__gte=from_date)
                                             & Q(IPRD_SIGNATURE_DATE__lte=to_date))
     elif from_date!="" and to_date!="" and len(tech)>0:
-        data = Sep_dashboard.objects.filter(Q(Technology__in=tech)
+        data = Sep_dashboard.objects.filter(query
                                             & Q(STANDARD__icontains=stand)
                                             & Q(PATENT_OWNER__icontains=patent)
                                             & Q(IPRD_REFERENCE__icontains=IPRD_REF)
@@ -168,7 +174,7 @@ def database_count(request):
                                             & Q(IPRD_SIGNATURE_DATE__lte=to_date))
     elif len(stand_sett)>0 and len(tech)>0:
         # data = Sep_dashboard.objects.filter(Technology__in=eval(tech))
-        data = Sep_dashboard.objects.filter(Q(Technology__in=tech)
+        data = Sep_dashboard.objects.filter(query
                                             & Q(STANDARD_SETTING__in=stand_sett)
                                             & Q(STANDARD__icontains=stand)
                                             & Q(PATENT_OWNER__icontains=patent)
@@ -183,12 +189,20 @@ def database_count(request):
                                             & Q(Patent_Number__icontains=Patent_num)
                                             & Q(Sub_Technology__icontains=Sub_Technology))
     elif len(tech)>0:
-        data = Sep_dashboard.objects.filter(Q(Technology__in=tech)
+        data = Sep_dashboard.objects.filter(query
                                             & Q(STANDARD__icontains=stand)
                                             & Q(PATENT_OWNER__icontains=patent)
                                             & Q(IPRD_REFERENCE__icontains=IPRD_REF)
                                             & Q(Patent_Number__icontains=Patent_num)
                                             & Q(Sub_Technology__icontains=Sub_Technology))
+    elif from_date!="" and to_date!="":
+        data = Sep_dashboard.objects.filter(Q(STANDARD__icontains=stand)
+                                            & Q(PATENT_OWNER__icontains=patent)
+                                            & Q(IPRD_REFERENCE__icontains=IPRD_REF)
+                                            & Q(Patent_Number__icontains=Patent_num)
+                                            & Q(Sub_Technology__icontains=Sub_Technology)
+                                            & Q(IPRD_SIGNATURE_DATE__gte=from_date)
+                                            & Q(IPRD_SIGNATURE_DATE__lte=to_date))
     else:
         data = Sep_dashboard.objects.filter(Q(STANDARD__icontains=stand)
                                             & Q(PATENT_OWNER__icontains=patent)
