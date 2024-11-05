@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from rest_framework.response import Response
 from .seializers import Sep_dashboard_Serilizaer
 from inside.models import Sep_dashboard
@@ -18,6 +19,7 @@ from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count
 import pandas as pd
+from dal import autocomplete
 
 @api_view(['GET','POST'])
 @authentication_classes([SessionAuthentication,TokenAuthentication])
@@ -34,12 +36,24 @@ def database_view(request):
             return Response(res.data[offset:offset+limit])
         return Response(res.data)
     if request.method=='POST':
-        serilizer=Sep_dashboard_Serilizaer(data=request.data)
-        if serilizer.is_valid():
-            serilizer.save()
-            return Response(serilizer.data)
+        if isinstance(request.data, list):
+            # If it's a list, validate and save each item
+            serializer = Sep_dashboard_Serilizaer(data=request.data, many=True)
         else:
-            return Response(serilizer.errors)
+            # Otherwise, handle as a single item
+            serializer = Sep_dashboard_Serilizaer(data=request.data)
+            # Validate and save if data is valid
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # serilizer=Sep_dashboard_Serilizaer(data=request.data)
+        # if serilizer.is_valid():
+        #     serilizer.save()
+        #     return Response(serilizer.data)
+        # else:
+        #     return Response(serilizer.errors)
 
 # class dashboard(generics.ListAPIView):
 #     queryset = Sep_dashboard.objects.all()
@@ -55,18 +69,38 @@ def database_view(request):
 #             limit=int(offset)
 #             return queryset[offset:offset+limit]
 #         return queryset
-    # def post(self):
-    #     serilizer = Sep_dashboard_Serilizaer(data=request.data)
-    #     if serilizer.is_valid():
-    #         serilizer.save()
-    #         return Response(serilizer.data)
-    #     else:
-    #         return Response(serilizer.errors)
+#     def post(self):
+#         serilizer = Sep_dashboard_Serilizaer(data=request.data)
+#         if serilizer.is_valid():
+#             serilizer.save()
+#             return Response(serilizer.data)
+#         else:
+#             return Response(serilizer.errors)
 # class dashboard_search(generics.ListAPIView):
 #     queryset = Sep_dashboard.objects.all()
 #     serializer_class = Sep_dashboard_Serilizaer
 #     filter_backends = [DjangoFilterBackend]
 #     filterset_fields =['STANDARD_SETTING','STANDARD','Technology','PATENT_OWNER','Inventor']
+
+
+# from your_countries_app.models import Country
+
+
+class PatentsAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        # if not self.request.user.is_authenticated:
+        #     return Sep_dashboard.objects.none()
+        qs = Sep_dashboard.objects.values_list('Patent_Number', flat=True).distinct()
+        if self.q:
+            qs = qs.filter(Patent_Number__icontains=self.q)
+            # res = Sep_dashboard_Serilizaer(qs, many=True)
+        return qs
+
+    def get(self, request, *args, **kwargs):
+        # Override the get method to return JSON response with a list of patent numbers
+        qs = self.get_queryset()
+        return JsonResponse({'results': [{'id': p, 'text': p} for p in qs]})
 
 def evaluate_data(res):
     count = {'Inventor': '', 'PATENT_OWNER': '', 'Publication_Number': '', 'SSO': '', 'STANDARD': '', 'Sub_Technology': '',

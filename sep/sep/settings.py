@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'import_export',
     'django_filters',
+    'dal',
+    'dal_select2',
 ]
 
 MIDDLEWARE = [
