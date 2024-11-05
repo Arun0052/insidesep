@@ -13,12 +13,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import authentication_classes,permission_classes
 from rest_framework.authentication import SessionAuthentication,TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.filters import SearchFilter,OrderingFilter
-from rest_framework import generics
-from rest_framework.views import APIView
-from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Count
-import pandas as pd
 from dal import autocomplete
 
 @api_view(['GET','POST'])
@@ -83,8 +77,6 @@ def database_view(request):
 #     filterset_fields =['STANDARD_SETTING','STANDARD','Technology','PATENT_OWNER','Inventor']
 
 
-# from your_countries_app.models import Country
-
 
 class PatentsAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
@@ -94,7 +86,6 @@ class PatentsAutocomplete(autocomplete.Select2QuerySetView):
         qs = Sep_dashboard.objects.values_list('Patent_Number', flat=True).distinct()
         if self.q:
             qs = qs.filter(Patent_Number__icontains=self.q)
-            # res = Sep_dashboard_Serilizaer(qs, many=True)
         return qs
 
     def get(self, request, *args, **kwargs):
@@ -102,23 +93,23 @@ class PatentsAutocomplete(autocomplete.Select2QuerySetView):
         qs = self.get_queryset()
         return JsonResponse({'results': [{'id': p, 'text': p} for p in qs]})
 
-def evaluate_data(res):
-    count = {'Inventor': '', 'PATENT_OWNER': '', 'Publication_Number': '', 'SSO': '', 'STANDARD': '', 'Sub_Technology': '',
-             'Technology': ''}
-    try:
-        df = pd.DataFrame(res.data)
-        count['SSO'] = len(df.drop_duplicates(['STANDARD_SETTING']).values)
-        count['STANDARD'] = len(df.drop_duplicates(['STANDARD']).values)
-        count['Technology'] = len(df.drop_duplicates(['Technology']).values)
-        count['PATENT_OWNER'] = len(df.drop_duplicates(['PATENT_OWNER']).values)
-        count['Sub_Technology'] = len(df.drop_duplicates(['Sub_Technology']).values)
-        count['Publication_Number'] = len(df.drop_duplicates(['Publication_Number']).values)
-        count['Inventor'] = len(df.drop_duplicates(['Inventor']).values)
-        result = {'total': len(df), 'cat_count': count}
-        return result
-    except:
-        result = {'total': 0, 'cat_count': count}
-        return result
+# def evaluate_data(res):
+#     count = {'Inventor': '', 'PATENT_OWNER': '', 'Publication_Number': '', 'SSO': '', 'STANDARD': '', 'Sub_Technology': '',
+#              'Technology': ''}
+#     try:
+#         df = pd.DataFrame(res.data)
+#         count['SSO'] = len(df.drop_duplicates(['STANDARD_SETTING']).values)
+#         count['STANDARD'] = len(df.drop_duplicates(['STANDARD']).values)
+#         count['Technology'] = len(df.drop_duplicates(['Technology']).values)
+#         count['PATENT_OWNER'] = len(df.drop_duplicates(['PATENT_OWNER']).values)
+#         count['Sub_Technology'] = len(df.drop_duplicates(['Sub_Technology']).values)
+#         count['Publication_Number'] = len(df.drop_duplicates(['Publication_Number']).values)
+#         count['Inventor'] = len(df.drop_duplicates(['Inventor']).values)
+#         result = {'total': len(df), 'cat_count': count}
+#         return result
+#     except:
+#         result = {'total': 0, 'cat_count': count}
+#         return result
 
 
 @api_view(['GET'])
@@ -173,7 +164,6 @@ def database_count(request):
                                             & Q(IPRD_SIGNATURE_DATE__gte=from_date)
                                             & Q(IPRD_SIGNATURE_DATE__lte=to_date))
     elif len(stand_sett)>0 and len(tech)>0:
-        # data = Sep_dashboard.objects.filter(Technology__in=eval(tech))
         data = Sep_dashboard.objects.filter(query
                                             & Q(STANDARD_SETTING__in=stand_sett)
                                             & Q(STANDARD__icontains=stand)
@@ -211,8 +201,24 @@ def database_count(request):
                                             & Q(Sub_Technology__icontains=Sub_Technology))
     data1 = data.distinct('IPRD_REFERENCE')
     unique_res = Sep_dashboard_Serilizaer(data1, many=True)
-    res = Sep_dashboard_Serilizaer(data, many=True)
-    count_data= evaluate_data(res)
+    # res = Sep_dashboard_Serilizaer(data, many=True)
+    count = {'Inventor': '', 'PATENT_OWNER': '', 'Publication_Number': '', 'SSO': '', 'STANDARD': '',
+             'Sub_Technology': '',
+             'Technology': ''}
+    try:
+        count['SSO'] = data.values('STANDARD_SETTING').distinct().count()
+        count['STANDARD'] = data.values('STANDARD').distinct().count()
+        count['Technology'] = data.values('Technology').distinct().count()
+        count['PATENT_OWNER'] = data.values('PATENT_OWNER').distinct().count()
+        count['Sub_Technology'] = data.values('Sub_Technology').distinct().count()
+        count['Publication_Number'] = data.values('Publication_Number').distinct().count()
+        count['Inventor'] = data.values('Inventor').distinct().count()
+        count_data = {'total': data.count(), 'cat_count': count}
+#     return JsonResponse(result)
+    except Exception as e:
+        count_data = {'total': 0, 'cat_count': count}
+        # return JsonResponse(result)
+    # count_data= evaluate_data(res)
     if offset is not None and limit is not None:
         offset = int(offset)
         limit = int(limit)
