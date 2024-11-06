@@ -112,6 +112,8 @@ class PatentsAutocomplete(autocomplete.Select2QuerySetView):
 #         return result
 
 @api_view(['GET'])
+@authentication_classes([SessionAuthentication,TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def unique_data(request):
     data = Sep_dashboard.objects.all()
     count = {
