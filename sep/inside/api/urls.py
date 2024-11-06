@@ -1,7 +1,7 @@
 # from django.contrib import admin
 from django.template.defaulttags import url
 from django.urls import path,include
-from .views import database_view,patents_view,database_count,get_database,PatentsAutocomplete
+from .views import database_view,patents_view,database_count,get_database,PatentsAutocomplete,unique_data
 from .views import signup,login,test_token
 
 urlpatterns = [
@@ -15,5 +15,5 @@ urlpatterns = [
     path('search/',database_count),
     path('search_iprd/',get_database),
     path('patents-autocomplete/', PatentsAutocomplete.as_view(), name='country-autocomplete'),
-
+    path('unique_data',unique_data)
 ]

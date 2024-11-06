@@ -47,3 +47,8 @@ curl --location 'http://127.0.0.1:8000/insidedb/1'
 '''
 http://127.0.0.1:8000/insidedb/patents-autocomplete/?q=AU
 '''
+
+### unique for dropdown
+'''
+http://127.0.0.1:8000/insidedb/unique_data
+'''

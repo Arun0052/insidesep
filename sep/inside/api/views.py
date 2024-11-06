@@ -111,6 +111,17 @@ class PatentsAutocomplete(autocomplete.Select2QuerySetView):
 #         result = {'total': 0, 'cat_count': count}
 #         return result
 
+@api_view(['GET'])
+def unique_data(request):
+    data = Sep_dashboard.objects.all()
+    count = {
+        'PATENT_OWNER': list(data.values_list('PATENT_OWNER', flat=True).distinct()),
+        'Sub_Technology': list(data.values_list('Sub_Technology', flat=True).distinct()),
+        'Publication_Number': list(data.values_list('STANDARD', flat=True).distinct()),
+        'IPRD_REFERENCE': list(data.values_list('IPRD_REFERENCE', flat=True).distinct())
+    }
+    return Response({"result": count})
+
 
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication,TokenAuthentication])
