@@ -57,7 +57,7 @@ class PasswordResetRequestView(APIView):
                 # reset_url = request.build_absolute_uri(
                 #     reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
                 # )
-                reset_url=f"http://insidesep.com/:3001/reset-password?token={token}&uidb64={uid}"
+                reset_url=f"http://insidesep.com:3000/reset-password?token={token}&uidb64={uid}"
                 send_mail(
                     'Password Reset Request',
                     f'Use the following link to reset your password: {reset_url}',
