@@ -67,8 +67,8 @@ class PasswordResetRequestView(APIView):
                 )
                 return Response({"message": "Password reset link sent."}, status=status.HTTP_200_OK)
             except User.DoesNotExist:
-                return Response({"error": "User with this email does not exist."}, status=status.HTTP_404_NOT_FOUND)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "User with this email does not exist."}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @api_view(['GET','POST'])
