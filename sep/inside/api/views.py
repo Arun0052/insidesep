@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from rest_framework.response import Response
-from .seializers import Sep_dashboard_Serilizaer
+from .seializers import Sep_dashboard_Serilizaer,PasswordResetRequestSerializer,SetNewPasswordSerializer
 from inside.models import Sep_dashboard
 from django.db.models import Q, F
 # from django.http import JsonResponse
@@ -14,6 +14,62 @@ from rest_framework.decorators import authentication_classes,permission_classes
 from rest_framework.authentication import SessionAuthentication,TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from dal import autocomplete
+# views.py
+from django.contrib.auth.models import User
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+# from .serializers import
+# # views.py
+# from .serializers import
+
+class PasswordResetConfirmView(APIView):
+    def post(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+            if default_token_generator.check_token(user, token):
+                serializer = SetNewPasswordSerializer(data=request.data)
+                if serializer.is_valid():
+                    user.set_password(serializer.validated_data['new_password'])
+                    user.save()
+                    return Response({"message": "Password reset successful."}, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({"error": "Invalid user ID."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetRequestView(APIView):
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            try:
+                user = User.objects.get(email=email)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                token = default_token_generator.make_token(user)
+                # reset_url = request.build_absolute_uri(
+                #     reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+                # )
+                reset_url=f"http://localhost:3001/reset-password?token={token}&uidb64={uid}"
+                send_mail(
+                    'Password Reset Request',
+                    f'Use the following link to reset your password: {reset_url}',
+                    'vs8029714@gmail.com',
+                    [user.email],
+                    fail_silently=False,
+                )
+                return Response({"message": "Password reset link sent."}, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response({"error": "User with this email does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET','POST'])
 @authentication_classes([SessionAuthentication,TokenAuthentication])
@@ -123,6 +179,7 @@ def unique_data(request):
         'IPRD_REFERENCE': list(data.values_list('IPRD_REFERENCE', flat=True).distinct())
     }
     return Response({"result": count})
+
 
 
 @api_view(['GET'])
