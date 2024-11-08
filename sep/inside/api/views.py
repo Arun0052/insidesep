@@ -186,115 +186,178 @@ def unique_data(request):
 @authentication_classes([SessionAuthentication,TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def database_count(request):
-    tech=request.GET.getlist("TECH[]",[])
-    stand_sett=request.GET.getlist("STANDARD_SET[]",[])
-    patent=request.GET.get("PATENT_OWNER",'')
-    stand=request.GET.get("STANDARD",'')
-    IPRD_REF=request.GET.get('IPRD_REFERENCE','')
-    Patent_num =request.GET.get('PATENT_NUM', '')
-    Sub_Technology=request.GET.get('Sub_Tech', '')
-    from_date=request.GET.get('DATE_FROM','')
-    to_date = request.GET.get('DATE_TO','')
+    tech = request.GET.getlist("TECH[]", [])
+    stand_sett = request.GET.getlist("STANDARD_SET[]", [])
+    patent = request.GET.getlist("PATENT_OWNER[]", [])
+    stand = request.GET.getlist("STANDARD[]", [])
+    IPRD_REF = request.GET.getlist('IPRD_REFERENCE[]', [])
+    Patent_num = request.GET.get('PATENT_NUM', '')
+    Sub_Technology = request.GET.getlist('Sub_Tech[]', [])
+    from_date = request.GET.get('DATE_FROM', '')
+    to_date = request.GET.get('DATE_TO', '')
     offset = request.GET.get("offset", None)
-    limit =  request.GET.get('limit', None)
-    if len(tech)>0:
-        query = Q()
+    limit = request.GET.get('limit', None)
+
+    # Initialize empty Q object to accumulate conditions
+    query = Q()
+
+    # Append conditions dynamically based on inputs
+    if tech:
+        tech_query = Q()  # Start with an empty Q object for tech
         for tec in tech:
-            query |= Q(Technology__icontains=tec)
+            tech_query |= Q(Technology__icontains=tec)  # Use |= to accumulate OR conditions
+        query &= tech_query  # Add the accumulated tech conditions to the main query
+    if stand_sett:
+        query &= Q(STANDARD_SETTING__in=stand_sett)
+    if patent:
+        query &= Q(PATENT_OWNER__in=patent)
+    if stand:
+        query &= Q(STANDARD__in=stand)
+    if IPRD_REF:
+        query &= Q(IPRD_REFERENCE__in=IPRD_REF)
+    if Patent_num:
+        query &= Q(Patent_Number__icontains=Patent_num)
+    if Sub_Technology:
+        query &= Q(Sub_Technology__in=Sub_Technology)
+    if from_date and to_date:
+        query &= Q(IPRD_SIGNATURE_DATE__gte=from_date) & Q(IPRD_SIGNATURE_DATE__lte=to_date)
 
-    if len(tech)==0 and len(stand_sett)==0 and patent=="" and stand=="" and IPRD_REF=="" and Patent_num=="" and Sub_Technology=="" and from_date=="" and to_date =="":
-        data = Sep_dashboard.objects.filter(STANDARD__iexact="ahhh")
+    # Apply filters
+    data = Sep_dashboard.objects.filter(query) if query else Sep_dashboard.objects.filter(STANDARD__iexact="ahhh")
 
-    elif from_date!="" and to_date!="" and len(stand_sett)>0 and len(tech)>0:
-        data = Sep_dashboard.objects.filter(query
-                                            & Q(STANDARD__icontains=stand)
-                                            & Q(STANDARD_SETTING__in=stand_sett)
-                                            & Q(PATENT_OWNER__icontains=patent)
-                                            & Q(IPRD_REFERENCE__icontains=IPRD_REF)
-                                            & Q(Patent_Number__icontains=Patent_num)
-                                            & Q(Sub_Technology__icontains=Sub_Technology)
-                                            & Q(IPRD_SIGNATURE_DATE__gte=from_date)
-                                            & Q(IPRD_SIGNATURE_DATE__lte=to_date))
-    elif from_date!="" and to_date!="" and len(stand_sett)>0:
-        data = Sep_dashboard.objects.filter(Q(STANDARD_SETTING__in=stand_sett)
-                                            & Q(STANDARD__icontains=stand)
-                                            & Q(PATENT_OWNER__icontains=patent)
-                                            & Q(IPRD_REFERENCE__icontains=IPRD_REF)
-                                            & Q(Patent_Number__icontains=Patent_num)
-                                            & Q(Sub_Technology__icontains=Sub_Technology)
-                                            & Q(IPRD_SIGNATURE_DATE__gte=from_date)
-                                            & Q(IPRD_SIGNATURE_DATE__lte=to_date))
-    elif from_date!="" and to_date!="" and len(tech)>0:
-        data = Sep_dashboard.objects.filter(query
-                                            & Q(STANDARD__icontains=stand)
-                                            & Q(PATENT_OWNER__icontains=patent)
-                                            & Q(IPRD_REFERENCE__icontains=IPRD_REF)
-                                            & Q(Patent_Number__icontains=Patent_num)
-                                            & Q(Sub_Technology__icontains=Sub_Technology)
-                                            & Q(IPRD_SIGNATURE_DATE__gte=from_date)
-                                            & Q(IPRD_SIGNATURE_DATE__lte=to_date))
-    elif len(stand_sett)>0 and len(tech)>0:
-        data = Sep_dashboard.objects.filter(query
-                                            & Q(STANDARD_SETTING__in=stand_sett)
-                                            & Q(STANDARD__icontains=stand)
-                                            & Q(PATENT_OWNER__icontains=patent)
-                                            & Q(IPRD_REFERENCE__icontains=IPRD_REF)
-                                            & Q(Patent_Number__icontains=Patent_num)
-                                            & Q(Sub_Technology__icontains=Sub_Technology))
-    elif len(stand_sett)>0:
-        data = Sep_dashboard.objects.filter(Q(STANDARD_SETTING__in=stand_sett)
-                                            & Q(STANDARD__icontains=stand)
-                                            & Q(PATENT_OWNER__icontains=patent)
-                                            & Q(IPRD_REFERENCE__icontains=IPRD_REF)
-                                            & Q(Patent_Number__icontains=Patent_num)
-                                            & Q(Sub_Technology__icontains=Sub_Technology))
-    elif len(tech)>0:
-        data = Sep_dashboard.objects.filter(query
-                                            & Q(STANDARD__icontains=stand)
-                                            & Q(PATENT_OWNER__icontains=patent)
-                                            & Q(IPRD_REFERENCE__icontains=IPRD_REF)
-                                            & Q(Patent_Number__icontains=Patent_num)
-                                            & Q(Sub_Technology__icontains=Sub_Technology))
-    elif from_date!="" and to_date!="":
-        data = Sep_dashboard.objects.filter(Q(STANDARD__icontains=stand)
-                                            & Q(PATENT_OWNER__icontains=patent)
-                                            & Q(IPRD_REFERENCE__icontains=IPRD_REF)
-                                            & Q(Patent_Number__icontains=Patent_num)
-                                            & Q(Sub_Technology__icontains=Sub_Technology)
-                                            & Q(IPRD_SIGNATURE_DATE__gte=from_date)
-                                            & Q(IPRD_SIGNATURE_DATE__lte=to_date))
-    else:
-        data = Sep_dashboard.objects.filter(Q(STANDARD__icontains=stand)
-                                            & Q(PATENT_OWNER__icontains=patent)
-                                            & Q(IPRD_REFERENCE__icontains=IPRD_REF)
-                                            & Q(Patent_Number__icontains=Patent_num)
-                                            & Q(Sub_Technology__icontains=Sub_Technology))
+    # Distinct on IPRD_REFERENCE and serialize results
     data1 = data.distinct('IPRD_REFERENCE')
     unique_res = Sep_dashboard_Serilizaer(data1, many=True)
-    # res = Sep_dashboard_Serilizaer(data, many=True)
-    count = {'Inventor': '', 'PATENT_OWNER': '', 'Publication_Number': '', 'SSO': '', 'STANDARD': '',
-             'Sub_Technology': '',
-             'Technology': ''}
-    try:
-        count['SSO'] = data.values('STANDARD_SETTING').distinct().count()
-        count['STANDARD'] = data.values('STANDARD').distinct().count()
-        count['Technology'] = data.values('Technology').distinct().count()
-        count['PATENT_OWNER'] = data.values('PATENT_OWNER').distinct().count()
-        count['Sub_Technology'] = data.values('Sub_Technology').distinct().count()
-        count['Publication_Number'] = data.values('Publication_Number').distinct().count()
-        count['Inventor'] = data.values('Inventor').distinct().count()
-        count_data = {'total': data.count(), 'cat_count': count}
-#     return JsonResponse(result)
-    except Exception as e:
-        count_data = {'total': 0, 'cat_count': count}
-        # return JsonResponse(result)
-    # count_data= evaluate_data(res)
+
+    # Count distinct values for each category
+    count = {
+        'Inventor': data.values('Inventor').distinct().count(),
+        'PATENT_OWNER': data.values('PATENT_OWNER').distinct().count(),
+        'Publication_Number': data.values('Publication_Number').distinct().count(),
+        'SSO': data.values('STANDARD_SETTING').distinct().count(),
+        'STANDARD': data.values('STANDARD').distinct().count(),
+        'Sub_Technology': data.values('Sub_Technology').distinct().count(),
+        'Technology': data.values('Technology').distinct().count()
+    }
+    count_data = {'total': data.count(), 'cat_count': count}
+
+    # Paginate results if offset and limit are provided
     if offset is not None and limit is not None:
-        offset = int(offset)
-        limit = int(limit)
-        return Response({'result':unique_res.data[offset:offset+limit],'count':count_data})
+        offset, limit = int(offset), int(limit)
+        return Response({'result': unique_res.data[offset:offset + limit], 'count': count_data})
     else:
         return Response({'result': unique_res.data, 'count': count_data})
+
+# def database_count(request):
+#     tech=request.GET.getlist("TECH[]",[])
+#     stand_sett=request.GET.getlist("STANDARD_SET[]",[])
+#     patent=request.GET.getlist("PATENT_OWNER[]",[])
+#     stand=request.GET.getlist("STANDARD[]",[])
+#     IPRD_REF=request.GET.getlist('IPRD_REFERENCE[]',[])
+#     Patent_num =request.GET.get('PATENT_NUM', '')
+#     Sub_Technology=request.GET.getlist('Sub_Tech[]', [])
+#     from_date=request.GET.get('DATE_FROM','')
+#     to_date = request.GET.get('DATE_TO','')
+#     offset = request.GET.get("offset", None)
+#     limit =  request.GET.get('limit', None)
+#     if len(tech)>0:
+#         query = Q()
+#         for tec in tech:
+#             query |= Q(Technology__icontains=tec)
+#
+#     if len(tech)==0 and len(stand_sett)==0 and len(patent)==0 and len(stand)==0 and len(IPRD_REF)==0 and Patent_num=='' and len(Sub_Technology)==0 and from_date=="" and to_date =="":
+#         data = Sep_dashboard.objects.filter(STANDARD__iexact="ahhh")
+#
+#     elif from_date!="" and to_date!="" and len(stand_sett)>0 and len(tech)>0 and len(stand_sett)==0 and len(patent)==0 and len(stand)==0 and len(IPRD_REF)==0:
+#         data = Sep_dashboard.objects.filter(query
+#                                             & Q(STANDARD__in=stand)
+#                                             & Q(STANDARD_SETTING__in=stand_sett)
+#                                             & Q(PATENT_OWNER__in=patent)
+#                                             & Q(IPRD_REFERENCE__in=IPRD_REF)
+#                                             & Q(Patent_Number__icontains=Patent_num)
+#                                             & Q(Sub_Technology__in=Sub_Technology)
+#                                             & Q(IPRD_SIGNATURE_DATE__gte=from_date)
+#                                             & Q(IPRD_SIGNATURE_DATE__lte=to_date))
+#     elif from_date!="" and to_date!="" and len(stand_sett)>0:
+#         data = Sep_dashboard.objects.filter(Q(STANDARD_SETTING__in=stand_sett)
+#                                             & Q(STANDARD__icontains=stand)
+#                                             & Q(PATENT_OWNER__icontains=patent)
+#                                             & Q(IPRD_REFERENCE__icontains=IPRD_REF)
+#                                             & Q(Patent_Number__icontains=Patent_num)
+#                                             & Q(Sub_Technology__icontains=Sub_Technology)
+#                                             & Q(IPRD_SIGNATURE_DATE__gte=from_date)
+#                                             & Q(IPRD_SIGNATURE_DATE__lte=to_date))
+#     elif from_date!="" and to_date!="" and len(tech)>0:
+#         data = Sep_dashboard.objects.filter(query
+#                                             & Q(STANDARD__icontains=stand)
+#                                             & Q(PATENT_OWNER__icontains=patent)
+#                                             & Q(IPRD_REFERENCE__icontains=IPRD_REF)
+#                                             & Q(Patent_Number__icontains=Patent_num)
+#                                             & Q(Sub_Technology__icontains=Sub_Technology)
+#                                             & Q(IPRD_SIGNATURE_DATE__gte=from_date)
+#                                             & Q(IPRD_SIGNATURE_DATE__lte=to_date))
+#     elif len(stand_sett)>0 and len(tech)>0:
+#         data = Sep_dashboard.objects.filter(query
+#                                             & Q(STANDARD_SETTING__in=stand_sett)
+#                                             & Q(STANDARD__icontains=stand)
+#                                             & Q(PATENT_OWNER__icontains=patent)
+#                                             & Q(IPRD_REFERENCE__icontains=IPRD_REF)
+#                                             & Q(Patent_Number__icontains=Patent_num)
+#                                             & Q(Sub_Technology__icontains=Sub_Technology))
+#     elif len(stand_sett)>0:
+#         data = Sep_dashboard.objects.filter(Q(STANDARD_SETTING__in=stand_sett) &
+#                                             Q(STANDARD__icontains=stand) &
+#                                             Q(PATENT_OWNER__in=patent) &
+#                                             Q(IPRD_REFERENCE__icontains=IPRD_REF)&
+#                                             Q(Patent_Number__icontains=Patent_num)&
+#                                             Q(Sub_Technology__icontains=Sub_Technology))
+#     elif len(tech)>0:
+#         data = Sep_dashboard.objects.filter(query
+#                                             & Q(STANDARD__icontains=stand)
+#                                             & Q(PATENT_OWNER__icontains=patent)
+#                                             & Q(IPRD_REFERENCE__icontains=IPRD_REF)
+#                                             & Q(Patent_Number__icontains=Patent_num)
+#                                             & Q(Sub_Technology__icontains=Sub_Technology))
+#     elif from_date!="" and to_date!="":
+#         data = Sep_dashboard.objects.filter(Q(STANDARD__icontains=stand)
+#                                             & Q(PATENT_OWNER__icontains=patent)
+#                                             & Q(IPRD_REFERENCE__icontains=IPRD_REF)
+#                                             & Q(Patent_Number__icontains=Patent_num)
+#                                             & Q(Sub_Technology__icontains=Sub_Technology)
+#                                             & Q(IPRD_SIGNATURE_DATE__gte=from_date)
+#                                             & Q(IPRD_SIGNATURE_DATE__lte=to_date))
+#     else:
+#         data = Sep_dashboard.objects.filter(Q(STANDARD__icontains=stand)
+#                                             & Q(PATENT_OWNER__icontains=patent)
+#                                             & Q(IPRD_REFERENCE__icontains=IPRD_REF)
+#                                             & Q(Patent_Number__icontains=Patent_num)
+#                                             & Q(Sub_Technology__icontains=Sub_Technology))
+#     data1 = data.distinct('IPRD_REFERENCE')
+#     unique_res = Sep_dashboard_Serilizaer(data1, many=True)
+#     # res = Sep_dashboard_Serilizaer(data, many=True)
+#     count = {'Inventor': '', 'PATENT_OWNER': '', 'Publication_Number': '', 'SSO': '', 'STANDARD': '',
+#              'Sub_Technology': '',
+#              'Technology': ''}
+#     try:
+#         count['SSO'] = data.values('STANDARD_SETTING').distinct().count()
+#         count['STANDARD'] = data.values('STANDARD').distinct().count()
+#         count['Technology'] = data.values('Technology').distinct().count()
+#         count['PATENT_OWNER'] = data.values('PATENT_OWNER').distinct().count()
+#         count['Sub_Technology'] = data.values('Sub_Technology').distinct().count()
+#         count['Publication_Number'] = data.values('Publication_Number').distinct().count()
+#         count['Inventor'] = data.values('Inventor').distinct().count()
+#         count_data = {'total': data.count(), 'cat_count': count}
+# #     return JsonResponse(result)
+#     except Exception as e:
+#         count_data = {'total': 0, 'cat_count': count}
+#         # return JsonResponse(result)
+#     # count_data= evaluate_data(res)
+#     if offset is not None and limit is not None:
+#         offset = int(offset)
+#         limit = int(limit)
+#         return Response({'result':unique_res.data[offset:offset+limit],'count':count_data})
+#     else:
+#         return Response({'result': unique_res.data, 'count': count_data})
 
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication,TokenAuthentication])
