@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Sep_dashboard
+from ..models import Sep_dashboard,Sep_Search
 from django.contrib.auth.models import User
 
 class Sep_dashboard_Serilizaer(serializers.Serializer):
@@ -68,6 +68,21 @@ class Sep_dashboard_Serilizaer(serializers.Serializer):
         instance.Inventor = validated_data.get('Inventor',instance.Inventor)
         instance.save()
         return instance
+
+
+class Sep_search_Serilizaer(serializers.Serializer):
+    IPRD_REFERENCE = serializers.CharField(allow_blank=True)
+    PATENT_OWNER = serializers.CharField(allow_blank=True)
+    Current_Assignee = serializers.CharField(allow_blank=True)
+    Application_Number = serializers.CharField(allow_blank=True)
+    Publication_Number = serializers.CharField(allow_blank=True)
+    RECOMMENDATION = serializers.CharField(allow_blank=True)
+    Sub_Technology = serializers.CharField(allow_blank=True)
+    Inventor = serializers.CharField(allow_blank=True)
+
+    def create(self, validated_data):
+        return Sep_Search.objects.create(**validated_data)
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta(object):

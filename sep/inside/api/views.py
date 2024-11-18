@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from rest_framework.response import Response
-from .seializers import Sep_dashboard_Serilizaer,PasswordResetRequestSerializer,SetNewPasswordSerializer
-from inside.models import Sep_dashboard
+from .seializers import Sep_search_Serilizaer,Sep_dashboard_Serilizaer,PasswordResetRequestSerializer,SetNewPasswordSerializer
+from inside.models import Sep_dashboard,Sep_Search
 from django.db.models import Q, F
 # from django.http import JsonResponse
 from rest_framework.decorators import api_view
@@ -69,6 +69,26 @@ class PasswordResetRequestView(APIView):
             except User.DoesNotExist:
                 return Response({"error": "User with this email does not exist."}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['GET','POST'])
+@authentication_classes([SessionAuthentication,TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def search_view(request):
+    if request.method=='POST':
+        if isinstance(request.data, list):
+            # If it's a list, validate and save each item
+            serializer = Sep_search_Serilizaer(data=request.data, many=True)
+        else:
+            # Otherwise, handle as a single item
+            serializer = Sep_search_Serilizaer(data=request.data)
+            # Validate and save if data is valid
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 @api_view(['GET','POST'])
@@ -171,12 +191,17 @@ class PatentsAutocomplete(autocomplete.Select2QuerySetView):
 @authentication_classes([SessionAuthentication,TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def unique_data(request):
-    data = Sep_dashboard.objects.all()
+    data = Sep_Search.objects.all()
     count = {
         'PATENT_OWNER': list(data.values_list('PATENT_OWNER', flat=True).distinct()),
         'Sub_Technology': list(data.values_list('Sub_Technology', flat=True).distinct()),
-        'Publication_Number': list(data.values_list('STANDARD', flat=True).distinct()),
-        'IPRD_REFERENCE': list(data.values_list('IPRD_REFERENCE', flat=True).distinct())
+        'Publication_Number': list(data.values_list('Publication_Number', flat=True).distinct()),
+        'Current_Assignee': list(data.values_list('Current_Assignee', flat=True).distinct()),
+        'Application_Number': list(data.values_list('Application_Number', flat=True).distinct()),
+        'RECOMMENDATION': list(data.values_list('RECOMMENDATION', flat=True).distinct()),
+        'Inventor': list(data.values_list('Inventor', flat=True).distinct()),
+        'IPRD_REFERENCE':list(data.values_list('IPRD_REFERENCE', flat=True).distinct())
+
     }
     return Response({"result": count})
 

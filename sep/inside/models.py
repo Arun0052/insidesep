@@ -2,6 +2,21 @@ from django.db import models
 
 # Create your models here.
 
+
+class Sep_Search(models.Model):
+    IPRD_REFERENCE=models.CharField(max_length=1000,blank=True)
+    PATENT_OWNER=models.CharField(max_length=1000,blank=True)
+    Current_Assignee=models.CharField(max_length=1000,blank=True)
+    Application_Number=models.CharField(max_length=1000,blank=True)
+    Publication_Number=models.CharField(max_length=1000,blank=True)
+    RECOMMENDATION=models.CharField(max_length=1000,blank=True)
+    Sub_Technology=models.CharField(max_length=1000,blank=True)
+    Inventor=models.CharField(max_length=1000,blank=True)
+
+    def __str__(self):
+        return self.Application_Number
+
+
 class Sep_dashboard(models.Model):
     S_No=models.CharField(max_length=20,blank=True)
     STANDARD_SETTING=models.CharField(max_length=200,blank=True)
