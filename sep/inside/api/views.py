@@ -3,30 +3,22 @@ from rest_framework.response import Response
 from .seializers import Sep_search_Serilizaer,Sep_dashboard_Serilizaer,PasswordResetRequestSerializer,SetNewPasswordSerializer
 from inside.models import Sep_dashboard,Sep_Search
 from django.db.models import Q, F
-# from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from .seializers import UserSerializer
-from rest_framework import status
 from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import authentication_classes,permission_classes
 from rest_framework.authentication import SessionAuthentication,TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from dal import autocomplete
-# views.py
 from django.contrib.auth.models import User
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.urls import reverse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-# from .serializers import
-# # views.py
-# from .serializers import
 
 class PasswordResetConfirmView(APIView):
     def post(self, request, uidb64, token):
@@ -190,20 +182,56 @@ class PatentsAutocomplete(autocomplete.Select2QuerySetView):
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication,TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def unique_data(request):
-    data = Sep_Search.objects.all()
-    count = {
-        'PATENT_OWNER': list(data.values_list('PATENT_OWNER', flat=True).distinct()),
-        'Sub_Technology': list(data.values_list('Sub_Technology', flat=True).distinct()),
-        'Publication_Number': list(data.values_list('Publication_Number', flat=True).distinct()),
-        'Current_Assignee': list(data.values_list('Current_Assignee', flat=True).distinct()),
-        'Application_Number': list(data.values_list('Application_Number', flat=True).distinct()),
-        'RECOMMENDATION': list(data.values_list('RECOMMENDATION', flat=True).distinct()),
-        'Inventor': list(data.values_list('Inventor', flat=True).distinct()),
-        'IPRD_REFERENCE':list(data.values_list('IPRD_REFERENCE', flat=True).distinct())
+def search_by_attribute(request):
+    # Get the attribute name from the request query parameter, defaulting to an empty string
+    attribute_name = request.GET.get('attribute_name', '').strip()
+    offset = request.GET.get("offset", None)
+    limit = request.GET.get('limit', None)
+    # If no attribute is specified, return an error message or all data as fallback
+    if not attribute_name:
+        return Response({"error": "No attribute_name specified."}, status=400)
 
-    }
-    return Response({"result": count})
+    # Define a list of valid attributes (column names) to prevent any unexpected column access
+    valid_attributes = [
+        'PATENT_OWNER',
+        'Sub_Technology',
+        'Publication_Number',
+        'Current_Assignee',
+        'Application_Number',
+        'RECOMMENDATION',
+        'Inventor',
+        'IPRD_REFERENCE'
+    ]
+
+    # Check if the attribute_name is valid
+    if attribute_name not in valid_attributes:
+        return Response({"error": f"Invalid attribute_name: {attribute_name}."}, status=400)
+
+    # Fetch the distinct values for the given attribute from the database
+    data = Sep_Search.objects.values_list(attribute_name, flat=True).distinct()
+    if offset is not None and limit is not None:
+        offset, limit = int(offset), int(limit)
+        return Response({attribute_name: data[offset:offset + limit]})
+    else:
+        return Response({attribute_name: data})
+    # Return the distinct values for the attribute
+    # return Response({attribute_name: list(data)})
+
+# def unique_data(request):
+#     attribute_name=request.GET.get('attribute_name', '')
+#     data = Sep_Search.objects.find_all()
+#     count = {
+#         'PATENT_OWNER': list(data.values_list('PATENT_OWNER', flat=True).distinct()),
+#         'Sub_Technology': list(data.values_list('Sub_Technology', flat=True).distinct()),
+#         'Publication_Number': list(data.values_list('Publication_Number', flat=True).distinct()),
+#         'Current_Assignee': list(data.values_list('Current_Assignee', flat=True).distinct()),
+#         'Application_Number': list(data.values_list('Application_Number', flat=True).distinct()),
+#         'RECOMMENDATION': list(data.values_list('RECOMMENDATION', flat=True).distinct()),
+#         'Inventor': list(data.values_list('Inventor', flat=True).distinct()),
+#         'IPRD_REFERENCE':list(data.values_list('IPRD_REFERENCE', flat=True).distinct())
+#
+#     }
+#     return Response({"result": count})
 
 
 
