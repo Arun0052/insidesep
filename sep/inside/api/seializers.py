@@ -71,6 +71,7 @@ class Sep_dashboard_Serilizaer(serializers.Serializer):
 
 
 class Sep_search_Serilizaer(serializers.Serializer):
+    #added new patent_number
     IPRD_REFERENCE = serializers.CharField(allow_blank=True)
     PATENT_OWNER = serializers.CharField(allow_blank=True)
     Current_Assignee = serializers.CharField(allow_blank=True)

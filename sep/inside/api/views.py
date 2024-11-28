@@ -68,6 +68,7 @@ class PasswordResetRequestView(APIView):
 def search_view(request):
     if request.method=='POST':
         if isinstance(request.data, list):
+            #new
             # If it's a list, validate and save each item
             serializer = Sep_search_Serilizaer(data=request.data, many=True)
         else:
