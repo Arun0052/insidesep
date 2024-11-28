@@ -74,6 +74,7 @@ def search_view(request):
             # Otherwise, handle as a single item
             serializer = Sep_search_Serilizaer(data=request.data)
             # Validate and save if data is valid
+
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
