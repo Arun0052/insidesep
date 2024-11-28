@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'import_export',
     'django_filters',
+    'dal',
+    'dal_select2',
 ]
 
 MIDDLEWARE = [
@@ -145,6 +147,15 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'        # Your email provider's SMTP server
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'arunkhajuria0052@gmail.com'
+EMAIL_HOST_PASSWORD = 'jpiadalzdfzflyyu'
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Static files (CSS, JavaScript, Images)

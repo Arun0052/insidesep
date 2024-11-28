@@ -42,3 +42,17 @@ curl --location --globoff 'http://127.0.0.1:8000/insidedb/search?TECH=["2G, 3G",
 '''
 curl --location 'http://127.0.0.1:8000/insidedb/1'
 '''
+### attribute_search
+'''
+http://127.0.0.1:8000/insidedb/search_by_attribute/?attribute_name=PATENT_OWNER
+'''
+
+### auto complete
+'''
+http://127.0.0.1:8000/insidedb/patents-autocomplete/?q=AU
+'''
+
+### unique for dropdown
+'''
+http://127.0.0.1:8000/insidedb/unique_data
+'''
