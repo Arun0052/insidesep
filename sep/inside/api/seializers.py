@@ -80,6 +80,7 @@ class Sep_search_Serilizaer(serializers.Serializer):
     Sub_Technology = serializers.CharField(allow_blank=True)
     Inventor = serializers.CharField(allow_blank=True)
     Patent_Number = serializers.CharField(allow_null=True)
+
     def create(self, validated_data):
         return Sep_Search.objects.create(**validated_data)
 
