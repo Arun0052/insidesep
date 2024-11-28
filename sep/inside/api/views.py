@@ -200,7 +200,8 @@ def search_by_attribute(request):
         'Application_Number',
         'RECOMMENDATION',
         'Inventor',
-        'IPRD_REFERENCE'
+        'IPRD_REFERENCE',
+        'Patent_Number'
     ]
 
     # Check if the attribute_name is valid
