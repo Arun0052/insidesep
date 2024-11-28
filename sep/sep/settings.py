@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-mhhaqk$*(v*pmd_h58wlki_n+*5dxb8bi6&k8f-ozu*-&u6+h8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*','51.20.25.59','insidesep.com','www.insidesep.com']
+ALLOWED_HOSTS = ['backend.insidesep.com','*','51.20.25.59','insidesep.com','www.insidesep.com']
 
 
 # Application definition
@@ -164,9 +164,9 @@ import os
 STATIC_URL = 'static/'
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
-STATICFILES_DIRS=[
-    os.path.join(BASE_DIR,'build','static'),
-]
+# STATICFILES_DIRS=[
+#     os.path.join(BASE_DIR,'build','static'),
+# ]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
