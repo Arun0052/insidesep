@@ -12,7 +12,7 @@ class Sep_Search(models.Model):
     RECOMMENDATION=models.CharField(max_length=1000,blank=True)
     Sub_Technology=models.CharField(max_length=1000,blank=True)
     Inventor=models.CharField(max_length=1000,blank=True)
-
+    Patent_Number=models.CharField(max_length=1000,blank=True)
     def __str__(self):
         return self.Application_Number
 
