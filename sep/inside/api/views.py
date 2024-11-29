@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from rest_framework.response import Response
 from .seializers import Sep_search_Serilizaer,Sep_dashboard_Serilizaer,PasswordResetRequestSerializer,SetNewPasswordSerializer
-from inside.models import Sep_dashboard,Sep_Search
+from inside.models import Sep_dashboard,Sep_Search,UserProfile
 from django.db.models import Q, F
 from rest_framework.decorators import api_view
 from .seializers import UserSerializer
@@ -16,9 +16,35 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from rest_framework import status
-from rest_framework.response import Response
+from django.utils import timezone
+from datetime import timedelta
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+# from myapp.models import UserProfile  # Replace with correct model path
+
+@api_view(['GET','POST'])
+@authentication_classes([SessionAuthentication,TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def ResetSearchCountAPIView(request):
+    if request.method=="POST":
+        action = request.data.get('action', None)
+        if action != 'reset':
+            return Response({"detail": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get current time
+        # now = timezone.now()
+        # Get all user profiles
+        user_profiles = UserProfile.objects.all()
+        # Loop through the profiles and reset the search count if the user joined more than 24 hours ago
+        for user_profile in user_profiles:
+            user_profile.search_count = 0
+            user_profile.save()
+            # if user_profile.user.date_joined < now - timedelta(days=1):
+
+        return Response({"detail": "Search count reset for eligible users."}, status=status.HTTP_200_OK)
+
+
 
 class PasswordResetConfirmView(APIView):
     def post(self, request, uidb64, token):
@@ -49,15 +75,29 @@ class PasswordResetRequestView(APIView):
                 # reset_url = request.build_absolute_uri(
                 #     reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
                 # )
-                reset_url=f"http://insidesep.com:3000/reset-password?token={token}&uidb64={uid}"
-                send_mail(
-                    'Password Reset Request',
-                    f'Use the following link to reset your password: {reset_url}',
-                    'vs8029714@gmail.com',
-                    [user.email],
-                    fail_silently=False,
-                )
-                return Response({"message": "Password reset link sent."}, status=status.HTTP_200_OK)
+                try:
+                    reset_url = f"https://insidesep.com/reset-password?token={token}&uidb64={uid}"
+
+                    # reset_url=f"http://insidesep.com:3000/reset-password?token={token}&uidb64={uid}"
+                    send_mail(
+                        'Password Reset Request',
+                        f'Use the following link to reset your password: {reset_url}',
+                        'vs8029714@gmail.com',
+                        [user.email],
+                        fail_silently=False,
+                    )
+                    return Response({"message": "Password reset link sent."}, status=status.HTTP_200_OK)
+                except:
+                    reset_url=f"http://insidesep.com:3000/reset-password?token={token}&uidb64={uid}"
+                    send_mail(
+                        'Password Reset Request',
+                        f'Use the following link to reset your password: {reset_url}',
+                        'vs8029714@gmail.com',
+                        [user.email],
+                        fail_silently=False,
+                    )
+                    return Response({"message": "Password reset link sent."}, status=status.HTTP_200_OK)
+
             except User.DoesNotExist:
                 return Response({"error": "User with this email does not exist."}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
@@ -235,7 +275,20 @@ def search_by_attribute(request):
 #     }
 #     return Response({"result": count})
 
-
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication,TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def user_limit(request):
+    if not hasattr(request.user, 'userprofile'):
+        UserProfile.objects.create(user=request.user)
+    user_profile = request.user.userprofile
+    if user_profile.search_count < 5:
+        # Perform the search here (for example, search for a query in the request)
+        user_profile.search_count += 1
+        user_profile.save()
+        return Response({"search_count":str(user_profile.search_count)})
+    else:
+        return Response({"message":"your limit is over","status":"False"})
 
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication,TokenAuthentication])
@@ -255,7 +308,6 @@ def database_count(request):
 
     # Initialize empty Q object to accumulate conditions
     query = Q()
-
     # Append conditions dynamically based on inputs
     if tech:
         tech_query = Q()  # Start with an empty Q object for tech
@@ -302,6 +354,7 @@ def database_count(request):
         return Response({'result': unique_res.data[offset:offset + limit], 'count': count_data})
     else:
         return Response({'result': unique_res.data, 'count': count_data})
+
 
 # def database_count(request):
 #     tech=request.GET.getlist("TECH[]",[])

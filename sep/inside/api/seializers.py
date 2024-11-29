@@ -69,6 +69,9 @@ class Sep_dashboard_Serilizaer(serializers.Serializer):
         instance.save()
         return instance
 
+class ResetSearchCountSerializer(serializers.Serializer):
+    # You can add more fields if you need to specify filtering, etc.
+    action = serializers.CharField(max_length=10)
 
 class Sep_search_Serilizaer(serializers.Serializer):
     IPRD_REFERENCE = serializers.CharField(allow_blank=True)

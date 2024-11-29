@@ -38,6 +38,19 @@ curl --location 'http://127.0.0.1:8000/insidedb/list/?limit=10&offset=10%0A'
 curl --location --globoff 'http://127.0.0.1:8000/insidedb/search?TECH=["2G, 3G", "2G"]&STANDARD_SET=["ETSI"]&PATENT_OWNER=null&IPRD_REFERENCE=null&PATENT_NUM=null&STANDARD=null&Sub_Tech=null&DATE_FROM=&DATE_TO='
 '''
 
+### user_limit
+'''
+curl --location 'http://127.0.0.1:8000/insidedb/user_limit' \
+--header 'Authorization: Token 3c6d42af0290098089029a33ed6e594acf04bf54'
+'''
+### reset limit
+'''
+curl --location 'http://127.0.0.1:8000/insidedb/reset-userlimit/' \
+--header 'Authorization: Token 3c6d42af0290098089029a33ed6e594acf04bf54' \
+--form 'action="reset"'
+'''
+
+
 ### single search with primary key
 '''
 curl --location 'http://127.0.0.1:8000/insidedb/1'
