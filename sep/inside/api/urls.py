@@ -10,7 +10,7 @@ from .views import ResetSearchCountAPIView
 # myapp/urls.py
 
 
-
+#added two end points
 urlpatterns = [
     path("list/",database_view),
     path("list_search/", search_view),
