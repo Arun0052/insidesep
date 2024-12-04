@@ -299,7 +299,7 @@ def database_count(request):
     patent = request.GET.getlist("PATENT_OWNER[]", [])
     stand = request.GET.getlist("STANDARD[]", [])
     IPRD_REF = request.GET.getlist('IPRD_REFERENCE[]', [])
-    Patent_num = request.GET.get('PATENT_NUM', '')
+    Patent_num = request.GET.getlist('PATENT_NUM[]', [])
     Sub_Technology = request.GET.getlist('Sub_Tech[]', [])
     from_date = request.GET.get('DATE_FROM', '')
     to_date = request.GET.get('DATE_TO', '')
@@ -323,7 +323,7 @@ def database_count(request):
     if IPRD_REF:
         query &= Q(IPRD_REFERENCE__in=IPRD_REF)
     if Patent_num:
-        query &= Q(Patent_Number__icontains=Patent_num)
+        query &= Q(Patent_Number__in=Patent_num)
     if Sub_Technology:
         query &= Q(Sub_Technology__in=Sub_Technology)
     if from_date and to_date:
