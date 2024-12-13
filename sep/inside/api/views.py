@@ -250,7 +250,8 @@ def search_by_attribute(request):
         return Response({"error": f"Invalid attribute_name: {attribute_name}."}, status=400)
 
     # Fetch the distinct values for the given attribute from the database
-    data = Sep_Search.objects.values_list(attribute_name, flat=True).distinct()
+    data = Sep_Search.objects.exclude(**{attribute_name: ''}).values_list(attribute_name, flat=True).distinct()
+    # data = Sep_Search.objects.values_list(attribute_name, flat=True).distinct()
     if offset is not None and limit is not None:
         offset, limit = int(offset), int(limit)
         return Response({attribute_name: data[offset:offset + limit]})
