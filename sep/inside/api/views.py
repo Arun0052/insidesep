@@ -499,17 +499,58 @@ def patents_view(request,pk):
         sep.delete()
         return Response("sucess")
 
+FREE_EMAIL_DOMAINS = [
+    'gmail.com', 'yahoo.com', 'yopmail.com', 'hotmail.com', 'aol.com', 'icloud.com', 'yandex.com'
+]
+
+def is_business_email(email):
+    """ Check if the email domain is not a free email provider """
+    domain = email.split('@')[-1]  # Extract domain from email
+    return domain not in FREE_EMAIL_DOMAINS
+
+
 @api_view(['POST'])
 def signup(request):
-    serilizer= UserSerializer(data=request.data)
-    if serilizer.is_valid():
-        serilizer.save()
-        user=User.objects.get(username=request.data['username'])
+    # Get the email from request data
+    email = request.data.get('email', '')
+
+    # Check if the email is a valid business email (not from free email providers)
+    if not is_business_email(email):
+        return Response("Please use a valid business email address.",
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    # Proceed with the regular serializer logic if email is valid
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        # Save the new user data
+        serializer.save()
+
+        # Get the created user object
+        user = User.objects.get(username=request.data['username'])
+
+        # Set the password for the user
         user.set_password(request.data['password'])
         user.save()
-        token=Token.objects.create(user=user)
-        return Response({"token":token.key,"user":serilizer.data})
-    return Response(serilizer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+        # Generate a token for the user
+        token = Token.objects.create(user=user)
+
+        # Return the token and user data
+        return Response({"token": token.key, "user": serializer.data})
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# @api_view(['POST'])
+# def signup(request):
+#     serilizer= UserSerializer(data=request.data)
+#     if serilizer.is_valid():
+#         serilizer.save()
+#         user=User.objects.get(username=request.data['username'])
+#         user.set_password(request.data['password'])
+#         user.save()
+#         token=Token.objects.create(user=user)
+#         return Response({"token":token.key,"user":serilizer.data})
+#     return Response(serilizer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def login(request):

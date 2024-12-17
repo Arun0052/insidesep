@@ -148,14 +148,17 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-# settings.py
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'        # Your email provider's SMTP server
+EMAIL_HOST = 'smtp.office365.com'        # Your email provider's SMTP server
+# EMAIL_HOST = 'smtp.gmail.com'        # Your email provider's SMTP server
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'arunkhajuria0052@gmail.com'
-EMAIL_HOST_PASSWORD = 'jpiadalzdfzflyyu'
+EMAIL_HOST_USER = "insideSEP@patentskart.com"
+EMAIL_HOST_PASSWORD = "Purplebookdata@001"
+
+# EMAIL_HOST_USER = 'arunkhajuria0052@gmail.com'
+# EMAIL_HOST_PASSWORD = 'jpiadalzdfzflyyu'
 # DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
