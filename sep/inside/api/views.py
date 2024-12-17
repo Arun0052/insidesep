@@ -82,7 +82,7 @@ class PasswordResetRequestView(APIView):
                     send_mail(
                         'Password Reset Request',
                         f'Use the following link to reset your password: {reset_url}',
-                        'vs8029714@gmail.com',
+                        'insideSEP@patentskart.com',
                         [user.email],
                         fail_silently=False,
                     )
