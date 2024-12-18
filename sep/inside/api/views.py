@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from rest_framework.response import Response
 from .seializers import Sep_search_Serilizaer,Sep_dashboard_Serilizaer,PasswordResetRequestSerializer,SetNewPasswordSerializer
-from inside.models import Sep_dashboard,Sep_Search,UserProfile
+from inside.models import Sep_dashboard,Sep_Search,UserProfile,ExcludedUser
 from django.db.models import Q, F
 from rest_framework.decorators import api_view
 from .seializers import UserSerializer
@@ -31,7 +31,6 @@ def ResetSearchCountAPIView(request):
         action = request.data.get('action', None)
         if action != 'reset':
             return Response({"detail": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
-
         # Get current time
         # now = timezone.now()
         # Get all user profiles
@@ -72,9 +71,6 @@ class PasswordResetRequestView(APIView):
                 user = User.objects.get(email=email)
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
                 token = default_token_generator.make_token(user)
-                # reset_url = request.build_absolute_uri(
-                #     reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
-                # )
                 try:
                     reset_url = f"https://insidesep.com/reset-password?token={token}&uidb64={uid}"
 
@@ -282,14 +278,37 @@ def search_by_attribute(request):
 def user_limit(request):
     if not hasattr(request.user, 'userprofile'):
         UserProfile.objects.create(user=request.user)
+
+    # Get the user profile for the current user
     user_profile = request.user.userprofile
+
+    # Check if the current user is in the ExcludedUser model
+    if ExcludedUser.objects.filter(username=request.user.username).exists():
+        # Allow the user to bypass the limit
+        return Response({"message": "Limit bypassed for this user","status":"True"})
+
+    # Check if the search count is less than the limit (5 searches in this case)
     if user_profile.search_count < 5:
         # Perform the search here (for example, search for a query in the request)
         user_profile.search_count += 1
         user_profile.save()
-        return Response({"search_count":str(user_profile.search_count)})
+        return Response({"search_count": str(user_profile.search_count)})
     else:
-        return Response({"message":"Free limit exhausted reach insidesep@patentskart.com for complete access","status":"False"})
+        return Response({
+            "message": "Free limit exhausted. Reach insidesep@patentskart.com for complete access",
+            "status": "False"
+        })
+# def user_limit(request):
+#     if not hasattr(request.user, 'userprofile'):
+#         UserProfile.objects.create(user=request.user)
+#     user_profile = request.user.userprofile
+#     if user_profile.search_count < 5:
+#         # Perform the search here (for example, search for a query in the request)
+#         user_profile.search_count += 1
+#         user_profile.save()
+#         return Response({"search_count":str(user_profile.search_count)})
+#     else:
+#         return Response({"message":"Free limit exhausted reach insidesep@patentskart.com for complete access","status":"False"})
 
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication,TokenAuthentication])

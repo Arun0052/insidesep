@@ -23,6 +23,7 @@ class Sep_Search(models.Model):
     Sub_Technology=models.CharField(max_length=1000,blank=True)
     Inventor=models.CharField(max_length=1000,blank=True)
     Patent_Number=models.CharField(max_length=1000,blank=True)
+
     def __str__(self):
         return self.Application_Number
 
@@ -58,6 +59,25 @@ class Sep_dashboard(models.Model):
     PATT_ID=models.IntegerField(blank=True)
     Inventor=models.CharField(max_length=1000,blank=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['STANDARD_SETTING']),
+            models.Index(fields=['Application_Number']),  # Index for faster search on Application_Number
+            models.Index(fields=['Patent_Number']),  # Index for faster search on Patent_Number
+            models.Index(fields=['Publication_Number']),  # Index for faster search on Publication_Number
+            models.Index(fields=['Technology']),  # Index for searching by Technology
+            models.Index(fields=['Sub_Technology'])  # Index for searching by Sub_Technology
+        ]
+
     def __str__(self):
         return self.S_No
 
+
+# from django.db import models
+
+
+class ExcludedUser(models.Model):
+    username = models.CharField(max_length=150, unique=True)
+
+    def __str__(self):
+        return self.username
