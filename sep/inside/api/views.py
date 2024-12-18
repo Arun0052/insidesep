@@ -289,7 +289,7 @@ def user_limit(request):
         user_profile.save()
         return Response({"search_count":str(user_profile.search_count)})
     else:
-        return Response({"message":"your limit is over","status":"False"})
+        return Response({"message":"Free limit exhausted reach insidesep@patentskart.com for complete access","status":"False"})
 
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication,TokenAuthentication])
