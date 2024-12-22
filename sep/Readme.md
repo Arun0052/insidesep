@@ -57,7 +57,9 @@ curl --location 'http://127.0.0.1:8000/insidedb/1'
 '''
 ### attribute_search
 '''
-http://127.0.0.1:8000/insidedb/search_by_attribute/?attribute_name=PATENT_OWNER
+curl --location 'http://127.0.0.1:8000/insidedb/search_by_attribute/?attribute_name=Publication_Number&search=A' \
+--header 'Authorization: Token 3c6d42af0290098089029a33ed6e594acf04bf54'
+
 '''
 
 ### auto complete

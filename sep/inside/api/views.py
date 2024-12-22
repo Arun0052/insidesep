@@ -222,12 +222,17 @@ class PatentsAutocomplete(autocomplete.Select2QuerySetView):
 def search_by_attribute(request):
     # Get the attribute name from the request query parameter, defaulting to an empty string
     attribute_name = request.GET.get('attribute_name', '').strip()
+    search=request.GET.get('search','').strip()
     offset = request.GET.get("offset", None)
     limit = request.GET.get('limit', None)
+    if search!='':
+        filter_kwargs = {f"{attribute_name}__icontains": search}
+        qs = Sep_Search.objects.values_list(attribute_name, flat=True).distinct()
+        d = qs.filter(**filter_kwargs)
+        return Response({attribute_name: [i for i in d]})
     # If no attribute is specified, return an error message or all data as fallback
     if not attribute_name:
         return Response({"error": "No attribute_name specified."}, status=400)
-
     # Define a list of valid attributes (column names) to prevent any unexpected column access
     valid_attributes = [
         'PATENT_OWNER',
@@ -240,7 +245,6 @@ def search_by_attribute(request):
         'IPRD_REFERENCE',
         'Patent_Number'
     ]
-
     # Check if the attribute_name is valid
     if attribute_name not in valid_attributes:
         return Response({"error": f"Invalid attribute_name: {attribute_name}."}, status=400)
@@ -249,9 +253,11 @@ def search_by_attribute(request):
     data = Sep_Search.objects.exclude(**{attribute_name: ''}).values_list(attribute_name, flat=True).distinct()
     # data = Sep_Search.objects.values_list(attribute_name, flat=True).distinct()
     if offset is not None and limit is not None:
+        data=[i for i in data if i!=0 or i!="" or i!=""]
         offset, limit = int(offset), int(limit)
         return Response({attribute_name: data[offset:offset + limit]})
     else:
+        data=[i for i in data if i!=0 or i!="" or i!=""]
         return Response({attribute_name: data})
     # Return the distinct values for the attribute
     # return Response({attribute_name: list(data)})
@@ -285,7 +291,9 @@ def user_limit(request):
     # Check if the current user is in the ExcludedUser model
     if ExcludedUser.objects.filter(username=request.user.username).exists():
         # Allow the user to bypass the limit
-        return Response({"message": "Limit bypassed for this user","status":"True"})
+        return Response({"search_count": str(user_profile.search_count)})
+
+        # return Response({"message": "Limit bypassed for this user","status":"True"})
 
     # Check if the search count is less than the limit (5 searches in this case)
     if user_profile.search_count < 5:
