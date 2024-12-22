@@ -229,7 +229,9 @@ def search_by_attribute(request):
         filter_kwargs = {f"{attribute_name}__icontains": search}
         qs = Sep_Search.objects.values_list(attribute_name, flat=True).distinct()
         d = qs.filter(**filter_kwargs)
-        return Response({attribute_name: [i for i in d]})
+        data=[i for i in d]
+        offset, limit = int(offset), int(limit)
+        return Response({attribute_name: data[offset:offset + limit]})
     # If no attribute is specified, return an error message or all data as fallback
     if not attribute_name:
         return Response({"error": "No attribute_name specified."}, status=400)
