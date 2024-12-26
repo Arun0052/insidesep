@@ -9,7 +9,7 @@ class Sep_dashboard_Serilizaer(serializers.Serializer):
     STANDARD_SETTING = serializers.CharField(allow_blank=True)
     IPRD_REFERENCE = serializers.CharField(allow_blank=True)
     DIPG_DISPLAY_NUMBER = serializers.IntegerField()
-    IPRD_SIGNATURE_DATE = serializers.DateField()
+    IPRD_SIGNATURE_DATE = serializers.DateField(required=False, allow_null=True)
     PATENT_OWNER = serializers.CharField(allow_blank=True)
     Current_Assignee = serializers.CharField(allow_blank=True)
     STANDARD = serializers.CharField(allow_blank=True)
@@ -68,6 +68,12 @@ class Sep_dashboard_Serilizaer(serializers.Serializer):
         instance.Inventor = validated_data.get('Inventor',instance.Inventor)
         instance.save()
         return instance
+
+    def validate_IPRD_SIGNATURE_DATE(self, value):
+        # If the value is an empty string, set it to None
+        if value == '':
+            return None
+        return value
 
 class ResetSearchCountSerializer(serializers.Serializer):
     # You can add more fields if you need to specify filtering, etc.

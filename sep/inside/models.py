@@ -33,7 +33,7 @@ class Sep_dashboard(models.Model):
     STANDARD_SETTING=models.CharField(max_length=200,blank=True)
     IPRD_REFERENCE=models.CharField(max_length=1000,blank=True)
     DIPG_DISPLAY_NUMBER=models.IntegerField(blank=True)
-    IPRD_SIGNATURE_DATE=models.DateField(blank=True)
+    IPRD_SIGNATURE_DATE=models.DateField(blank=True,null=True)
     PATENT_OWNER=models.CharField(max_length=1000,blank=True)
     Current_Assignee=models.CharField(max_length=1000,blank=True)
     STANDARD=models.CharField(max_length=1000,blank=True)
