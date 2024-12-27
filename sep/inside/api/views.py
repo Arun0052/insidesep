@@ -331,6 +331,8 @@ def database_count(request):
     IPRD_REF = request.GET.getlist('IPRD_REFERENCE[]', [])
     Patent_num = request.GET.getlist('PATENT_NUM[]', [])
     Sub_Technology = request.GET.getlist('Sub_Tech[]', [])
+    Application_number = request.GET.getlist('Application_Number[]', [])
+    Publication_Number=request.GET.getlist('Publication_Number[]', [])
     from_date = request.GET.get('DATE_FROM', '')
     to_date = request.GET.get('DATE_TO', '')
     offset = request.GET.get("offset", None)
@@ -344,6 +346,10 @@ def database_count(request):
         for tec in tech:
             tech_query |= Q(Technology__icontains=tec)  # Use |= to accumulate OR conditions
         query &= tech_query  # Add the accumulated tech conditions to the main query
+    if Publication_Number:
+        query &= Q(Publication_Number__in=Publication_Number)
+    if Application_number:
+        query &= Q(Application_Number__in=Application_number)
     if stand_sett:
         query &= Q(STANDARD_SETTING__in=stand_sett)
     if patent:
