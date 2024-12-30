@@ -324,72 +324,81 @@ def user_limit(request):
 @authentication_classes([SessionAuthentication,TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def database_count(request):
-    tech = request.GET.getlist("TECH[]", [])
-    stand_sett = request.GET.getlist("STANDARD_SET[]", [])
-    patent = request.GET.getlist("PATENT_OWNER[]", [])
-    stand = request.GET.getlist("STANDARD[]", [])
-    IPRD_REF = request.GET.getlist('IPRD_REFERENCE[]', [])
-    Patent_num = request.GET.getlist('PATENT_NUM[]', [])
-    Sub_Technology = request.GET.getlist('Sub_Tech[]', [])
-    Application_number = request.GET.getlist('Application_Number[]', [])
-    Publication_Number=request.GET.getlist('Publication_Number[]', [])
-    from_date = request.GET.get('DATE_FROM', '')
-    to_date = request.GET.get('DATE_TO', '')
-    offset = request.GET.get("offset", None)
-    limit = request.GET.get('limit', None)
+    try:
+        selectall = request.GET.get("select_all")
+        offset = request.GET.get("offset", None)
+        limit = request.GET.get('limit', None)
+        if selectall == "TRUE" or selectall == 'True':
+            data = Sep_dashboard.objects.all()
+        else:
+            tech = request.GET.getlist("TECH[]", [])
+            stand_sett = request.GET.getlist("STANDARD_SET[]", [])
+            patent = request.GET.getlist("PATENT_OWNER[]", [])
+            stand = request.GET.getlist("STANDARD[]", [])
+            IPRD_REF = request.GET.getlist('IPRD_REFERENCE[]', [])
+            Patent_num = request.GET.getlist('PATENT_NUM[]', [])
+            Sub_Technology = request.GET.getlist('Sub_Tech[]', [])
+            Application_number = request.GET.getlist('Application_Number[]', [])
+            Publication_number = request.GET.getlist('Publication_Number[]', [])
+            from_date = request.GET.get('DATE_FROM', '')
+            to_date = request.GET.get('DATE_TO', '')
 
-    # Initialize empty Q object to accumulate conditions
-    query = Q()
-    # Append conditions dynamically based on inputs
-    if tech:
-        tech_query = Q()  # Start with an empty Q object for tech
-        for tec in tech:
-            tech_query |= Q(Technology__icontains=tec)  # Use |= to accumulate OR conditions
-        query &= tech_query  # Add the accumulated tech conditions to the main query
-    if Publication_Number:
-        query &= Q(Publication_Number__in=Publication_Number)
-    if Application_number:
-        query &= Q(Application_Number__in=Application_number)
-    if stand_sett:
-        query &= Q(STANDARD_SETTING__in=stand_sett)
-    if patent:
-        query &= Q(PATENT_OWNER__in=patent)
-    if stand:
-        query &= Q(STANDARD__in=stand)
-    if IPRD_REF:
-        query &= Q(IPRD_REFERENCE__in=IPRD_REF)
-    if Patent_num:
-        query &= Q(Patent_Number__in=Patent_num)
-    if Sub_Technology:
-        query &= Q(Sub_Technology__in=Sub_Technology)
-    if from_date and to_date:
-        query &= Q(IPRD_SIGNATURE_DATE__gte=from_date) & Q(IPRD_SIGNATURE_DATE__lte=to_date)
+            # Initialize empty Q object to accumulate conditions
+            query = Q()
+            # Append conditions dynamically based on inputs
+            if tech:
+                tech_query = Q()  # Start with an empty Q object for tech
+                for tec in tech:
+                    tech_query |= Q(Technology__icontains=tec)  # Use |= to accumulate OR conditions
+                query &= tech_query  # Add the accumulated tech conditions to the main query
+            if Publication_number:
+                query &= Q(Publication_Number__in=Publication_number)
+            if Application_number:
+                query &= Q(Application_Number__in=Application_number)
+            if stand_sett:
+                query &= Q(STANDARD_SETTING__in=stand_sett)
+            if patent:
+                query &= Q(PATENT_OWNER__in=patent)
+            if stand:
+                query &= Q(STANDARD__in=stand)
+            if IPRD_REF:
+                query &= Q(IPRD_REFERENCE__in=IPRD_REF)
+            if Patent_num:
+                query &= Q(Patent_Number__in=Patent_num)
+            if Sub_Technology:
+                query &= Q(Sub_Technology__in=Sub_Technology)
+            if from_date and to_date:
+                query &= Q(IPRD_SIGNATURE_DATE__gte=from_date) & Q(IPRD_SIGNATURE_DATE__lte=to_date)
 
-    # Apply filters
-    data = Sep_dashboard.objects.filter(query) if query else Sep_dashboard.objects.filter(STANDARD__iexact="ahhh")
+            # Apply filters
+            data = Sep_dashboard.objects.filter(query) if query else Sep_dashboard.objects.filter(
+                STANDARD__iexact="ahhh")
 
-    # Distinct on IPRD_REFERENCE and serialize results
-    data1 = data.distinct('IPRD_REFERENCE')
-    unique_res = Sep_dashboard_Serilizaer(data1, many=True)
+        # Distinct on IPRD_REFERENCE and serialize results
+        data1 = data.distinct('IPRD_REFERENCE')
+        unique_res = Sep_dashboard_Serilizaer(data1, many=True)
 
-    # Count distinct values for each category
-    count = {
-        'Inventor': data.values('Inventor').distinct().count(),
-        'PATENT_OWNER': data.values('PATENT_OWNER').distinct().count(),
-        'Publication_Number': data.values('Publication_Number').distinct().count(),
-        'SSO': data.values('STANDARD_SETTING').distinct().count(),
-        'STANDARD': data.values('STANDARD').distinct().count(),
-        'Sub_Technology': data.values('Sub_Technology').distinct().count(),
-        'Technology': data.values('Technology').distinct().count()
-    }
-    count_data = {'total': data.count(), 'cat_count': count}
+        # Count distinct values for each category
+        count = {
+            'Inventor': data.values('Inventor').distinct().count(),
+            'PATENT_OWNER': data.values('PATENT_OWNER').distinct().count(),
+            'Publication_Number': data.values('Publication_Number').distinct().count(),
+            'SSO': data.values('STANDARD_SETTING').distinct().count(),
+            'STANDARD': data.values('STANDARD').distinct().count(),
+            'Sub_Technology': data.values('Sub_Technology').distinct().count(),
+            'Technology': data.values('Technology').distinct().count()
+        }
+        count_data = {'total': data.count(), 'cat_count': count}
 
-    # Paginate results if offset and limit are provided
-    if offset is not None and limit is not None:
-        offset, limit = int(offset), int(limit)
-        return Response({'result': unique_res.data[offset:offset + limit], 'count': count_data})
-    else:
-        return Response({'result': unique_res.data, 'count': count_data})
+        # Paginate results if offset and limit are provided
+        if offset is not None and limit is not None:
+            offset, limit = int(offset), int(limit)
+            return Response({'result': unique_res.data[offset:offset + limit], 'count': count_data})
+        else:
+            return Response({'result': unique_res.data, 'count': count_data})
+    except Exception as e:
+        print(e)
+
 
 
 # def database_count(request):
@@ -532,7 +541,7 @@ def patents_view(request,pk):
     if request.method=='DELETE':
         sep=Sep_dashboard.objects.get(pk=pk)
         sep.delete()
-        return Response("sucess")
+        return Response("success")
 
 FREE_EMAIL_DOMAINS = [
     'gmail.com', 'yahoo.com', 'yopmail.com', 'hotmail.com', 'aol.com', 'icloud.com', 'yandex.com'
