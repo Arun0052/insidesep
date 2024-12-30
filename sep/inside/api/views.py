@@ -397,7 +397,8 @@ def database_count(request):
         else:
             return Response({'result': unique_res.data, 'count': count_data})
     except Exception as e:
-        print(e)
+        return Response({"result":"[]","Error":str(e),"status":status.HTTP_400_BAD_REQUEST})
+        # print(e)
 
 
 
