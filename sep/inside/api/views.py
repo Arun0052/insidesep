@@ -328,21 +328,52 @@ def database_count(request):
         selectall = request.GET.get("select_all")
         offset = request.GET.get("offset", None)
         limit = request.GET.get('limit', None)
-        if selectall == "TRUE" or selectall == 'True':
+
+        # Retrieve the list values
+        tech = request.GET.getlist("TECH[]", [])
+        stand_sett = request.GET.getlist("STANDARD_SET[]", [])
+        patent = request.GET.getlist("PATENT_OWNER[]", [])
+        stand = request.GET.getlist("STANDARD[]", [])
+        IPRD_REF = request.GET.getlist('IPRD_REFERENCE[]', [])
+        Patent_num = request.GET.getlist('PATENT_NUM[]', [])
+        Sub_Technology = request.GET.getlist('Sub_Tech[]', [])
+        Application_number = request.GET.getlist('Application_Number[]', [])
+        Publication_number = request.GET.getlist('Publication_Number[]', [])
+        from_date = request.GET.get('DATE_FROM', '')
+        to_date = request.GET.get('DATE_TO', '')
+
+        # Check if all arrays and date fields are empty
+        if selectall == "TRUE" or selectall == 'True' and (
+                not tech and
+                not stand_sett and
+                not patent and
+                not stand and
+                not IPRD_REF and
+                not Patent_num and
+                not Sub_Technology and
+                not Application_number and
+                not Publication_number and
+                from_date == '' and
+                to_date == ''):
             data = Sep_dashboard.objects.all()
         else:
-            tech = request.GET.getlist("TECH[]", [])
-            stand_sett = request.GET.getlist("STANDARD_SET[]", [])
-            patent = request.GET.getlist("PATENT_OWNER[]", [])
-            stand = request.GET.getlist("STANDARD[]", [])
-            IPRD_REF = request.GET.getlist('IPRD_REFERENCE[]', [])
-            Patent_num = request.GET.getlist('PATENT_NUM[]', [])
-            Sub_Technology = request.GET.getlist('Sub_Tech[]', [])
-            Application_number = request.GET.getlist('Application_Number[]', [])
-            Publication_number = request.GET.getlist('Publication_Number[]', [])
-            from_date = request.GET.get('DATE_FROM', '')
-            to_date = request.GET.get('DATE_TO', '')
-
+        # selectall = request.GET.get("select_all")
+        # offset = request.GET.get("offset", None)
+        # limit = request.GET.get('limit', None)
+        # if selectall == "TRUE" or selectall == 'True':
+        #     data = Sep_dashboard.objects.all()
+        # else:
+        #     tech = request.GET.getlist("TECH[]", [])
+        #     stand_sett = request.GET.getlist("STANDARD_SET[]", [])
+        #     patent = request.GET.getlist("PATENT_OWNER[]", [])
+        #     stand = request.GET.getlist("STANDARD[]", [])
+        #     IPRD_REF = request.GET.getlist('IPRD_REFERENCE[]', [])
+        #     Patent_num = request.GET.getlist('PATENT_NUM[]', [])
+        #     Sub_Technology = request.GET.getlist('Sub_Tech[]', [])
+        #     Application_number = request.GET.getlist('Application_Number[]', [])
+        #     Publication_number = request.GET.getlist('Publication_Number[]', [])
+        #     from_date = request.GET.get('DATE_FROM', '')
+        #     to_date = request.GET.get('DATE_TO', '')
             # Initialize empty Q object to accumulate conditions
             query = Q()
             # Append conditions dynamically based on inputs
